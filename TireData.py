@@ -2,6 +2,7 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 class Tire:
     """ In der Klasse Tire werden alle Informationen zu einem Reifen gespeichert. """
 
@@ -18,35 +19,48 @@ class Tire:
             #self.sortedLonData[pressure_keys[i]]=pd.DataFrame()
             df_new=[]
             for sa_index in range(len(sa_keys)):
+                sa = 0
                 sa = (self.data[self.pressure_keys[i]]["SA"] < slipAngleUpperBorder[sa_index]) & (self.data[self.pressure_keys[i]]["SA"] > slipAngleLowerBorder[sa_index])
                 for fz_index in range(len(fz_keys)):
+                    fz = 0
                     fz = (self.data[self.pressure_keys[i]]["FZ"] < fzUpperBorder[fz_index]) & (self.data[self.pressure_keys[i]]["SA"] >fzLowerBorder[fz_index])
                     for ia_index in range(len(ia_keys)):
+                        ia = 0
                         ia = (self.data[self.pressure_keys[i]]["IA"] < iaUpperBorder[ia_index]) & (self.data[self.pressure_keys[i]]["SA"] > iaLowerBorder[ia_index])
                         bool_index=[]
 
                         for m,n,b in zip(sa,fz,ia):
-                            if (m==n) &(m==b) & (b==n):
+                            if (m==n) & (m==b) & (b==n):
                                 bool_index.append(True)
                             else:
                                 bool_index.append(False)
 
+                        #print(bool_index)
                         #bool_index = (sa==fz) & (sa == ia) & (ia == fz) & (sa == True) & (fz == True) & (ia == True)
-                        df_new.append(pd.DataFrame(self.data[pressure_keys[i]][bool_index]))
-                        self.bool_index.append(bool_index)
-                        z=z+1
+                        bool_series=pd.Series(bool_index, name='bool')
+                        df_loop = pd.DataFrame()
+                        df_loop = pd.DataFrame(self.data[pressure_keys[i]][bool_series])
                         
+                        #for index_index in range(len(bool_index)):
+                        #    if bool_index[index_index]:
+                        #        df_loop.append(self.data[pressure_keys[i]].loc[index_index])
 
-           
-           # keyTuple = tuple(keyList)
-            self.sortedLonData[pressure_keys[i]] = pd.concat(df_new, keys=['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37'])
+                        df_new.append(df_loop)
+                                #df_new.append(pd.DataFrame(self.data[pressure_keys[i]].iloc[index_index]))
+                        #df_new.append(pd.DataFrame(self.data[pressure_keys[i]][bool_index]))
+                        #self.bool_index.append(bool_index)
+                        #z=z+1
+
+            df_finish = pd.DataFrame()
+            df_finish = pd.concat(df_new, keys=['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37'])
+            self.sortedLonData[pressure_keys[i]] = df_finish
 
     def plotLonData(self, ia_keys):
         z = list(self.sortedLonData["10PSI"].index.get_level_values(0))
         z = list(dict.fromkeys(z))
         plt.figure(1)
         for i in range(len(self.pressure_keys)):
-            plt.plot(self.sortedLonData[self.pressure_keys[i]].loc['0']['SR'],self.sortedLonData[self.pressure_keys[i]].loc['0']['FX'],label=self.pressure_keys[i])
+            plt.plot(self.sortedLonData[self.pressure_keys[i]].loc['0']['SL'],self.sortedLonData[self.pressure_keys[i]].loc['0']['FX'],label=self.pressure_keys[i])
 
         plt.xlabel('Slip ratio [-]')
         plt.ylabel('Fx [N]')
@@ -55,7 +69,7 @@ class Tire:
         plt.show()
         plt.figure(2)
         for j in range(len(ia_keys)):
-            plt.plot(hoosier13.sortedLonData['10PSI'].loc[z[j]]['SR'],hoosier13.sortedLonData['10PSI'].loc[z[j]]['FX'],label=ia_keys[j])
+            plt.plot(self.sortedLonData['10PSI'].loc[z[j]]['SL'],self.sortedLonData['10PSI'].loc[z[j]]['FX'],label=ia_keys[j])
         
         plt.xlabel('Slip ratio [-]')
         plt.ylabel('Fx [N]')
@@ -68,6 +82,7 @@ class Tire:
 
 
 """Data import"""
+#Import boundary values for sorting
 df = pd.read_table("Grenzen.txt",header=None)
 keys = df[0].tolist()
 lowerBorders = df[1].tolist()
@@ -75,17 +90,30 @@ upperBorders = df[2].tolist()
 key_dict = {"ia_keys": keys[0:3], "fz_keys": keys[3:7],"sa_keys":keys[7:]}
 lowerBorder_dict = {"ia_lBorder":lowerBorders[0:3],"fz_lBorder":lowerBorders[3:7], "sa_lBorder":lowerBorders[7:]}
 upperBorder_dict = {"ia_uBorder": upperBorders[0:3], "fz_uBorder": upperBorders[3:7], "sa_uBorder": upperBorders[7:]}
-files_braking = [".\Data\B1320run4.dat",".\Data\B1320run5.dat"]
-pressure_keys = ["12PSI","10PSI"]
+
+#Import Braking files
+files_braking = os.listdir("Data\Braking")
+files_braking = [('Data\\Braking\\' + i ) for i in files_braking]
+
+#Import Cornering Files
+
+
+#Import pressure levels
+pressure_keys_df = pd.read_table("Druck.txt",header=None)
+pressure_keys = pressure_keys_df[0].tolist()
 data = {pressure_keys[0]: 0}
+
+#Import raw data
 for i in range(len(files_braking)):
       data[pressure_keys[i]] = pd.read_table(files_braking[i],header=[1],skiprows=[2])
 
-#print(data)
-
+#Create new object of class Tire and use the object function to sort data in "situations"
 hoosier13=Tire(13,data,pressure_keys)
 hoosier13.sortLonData(key_dict["ia_keys"],key_dict["fz_keys"],key_dict["sa_keys"], lowerBorder_dict["ia_lBorder"], upperBorder_dict["ia_uBorder"], lowerBorder_dict["fz_lBorder"], upperBorder_dict["fz_uBorder"], lowerBorder_dict["sa_lBorder"], upperBorder_dict["sa_uBorder"] )
-#print(hoosier13.sortedLonData)
-#print(hoosier13.index)
+#hoosier13.sortLatData(key_dict["ia_keys"],key_dict["fz_keys"],key_dict["sa_keys"], lowerBorder_dict["ia_lBorder"], upperBorder_dict["ia_uBorder"], lowerBorder_dict["fz_lBorder"], upperBorder_dict["fz_uBorder"], lowerBorder_dict["sa_lBorder"], upperBorder_dict["sa_uBorder"] )
 
-hoosier13.plotLonData(key_dict["ia_keys"])
+
+#Plot sorted data
+#hoosier13.plotLonData(key_dict["ia_keys"])
+#hoosier13.plotLatData(key_dict["ia_keys"])
+
