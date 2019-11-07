@@ -36,7 +36,7 @@ class Tire:
                         bool_index = []
 
                         for m, n, b in zip(sa, fz, ia):
-                            if (m == n) & (m == b) & (b == n):
+                            if m,n,b:
                                 bool_index.append(True)
                             else:
                                 bool_index.append(False)
