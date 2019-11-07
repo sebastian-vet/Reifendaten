@@ -30,7 +30,7 @@ class Tire:
                         bool_index=[]
 
                         for m,n,b in zip(sa,fz,ia):
-                            if (m==n) & (m==b) & (b==n):
+                            if m & b& n:
                                 bool_index.append(True)
                             else:
                                 bool_index.append(False)
@@ -114,6 +114,6 @@ hoosier13.sortLonData(key_dict["ia_keys"],key_dict["fz_keys"],key_dict["sa_keys"
 
 
 #Plot sorted data
-#hoosier13.plotLonData(key_dict["ia_keys"])
-#hoosier13.plotLatData(key_dict["ia_keys"])
+hoosier13.plotLonData(key_dict["ia_keys"])
+
 
