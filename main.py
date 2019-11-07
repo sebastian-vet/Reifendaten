@@ -66,9 +66,14 @@ import_raw_data()
 
 # x = [for item["V"] in data.items[0]]
 
-for path, pressure_key in zip(files_braking, pressure_keys):
-    table = pd.read_table(path, header=[1], skiprows=[2])
-    plt.plot(table["ET"], table["V"], label="locations filled")
-plt.legend()
-plt.show()
+def plot():
+    for path, pressure_key in zip(files_braking, pressure_keys):
+        table = pd.read_table(path, header=[1], skiprows=[2])
+        plt.plot(table["ET"], table["V"], label="locations filled")
+    plt.legend()
+    plt.show()
+
+
+if __name__ == "__main__":
+    plot()
 
