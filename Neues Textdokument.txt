@@ -1,0 +1,37 @@
+# Sortiert die Cornering Daten nach "Situationen".
+    def sortLatData(self, ia_keys, fz_keys, sa_keys, iaLowerBorder, 
+                    iaUpperBorder, fzLowerBorder, fzUpperBorder, 
+                    slipAngleLowerBorder, slipAngleUpperBorder):
+        for pressure_key in self.pressure_keys:
+            df_new = []
+            for sa_index in range(len(sa_keys)):
+                sa = 0
+                sa = (self.data_cornering[pressure_key]["SA"] < slipAngleUpperBorder[sa_index]) & (
+                    self.data_cornering[pressure_key]["SA"] > slipAngleLowerBorder[sa_index])
+                for fz_index in range(len(fz_keys)):
+                    fz = 0
+                    fz = (self.data_cornering[pressure_key]["FZ"] < fzUpperBorder[fz_index]) & (
+                        self.data_cornering[pressure_key]["FZ"] > fzLowerBorder[fz_index])
+                    for ia_index in range(len(ia_keys)):
+                        ia = 0
+                        ia = (self.data_cornering[pressure_key]["IA"] < iaUpperBorder[ia_index]) & (
+                            self.data_cornering[pressure_key]["IA"] > iaLowerBorder[ia_index])
+                        bool_index = []
+
+                        for m, n, b in zip(sa, fz, ia):
+                            if m & n & b:
+                                bool_index.append(True)
+                            else:
+                                bool_index.append(False)
+
+                        bool_series = pd.Series(bool_index, name='bool')
+                        df_loop = pd.DataFrame()
+                        df_loop = pd.DataFrame(
+                        self.data_cornering[pressure_key][bool_series])
+                        df_new.append(df_loop)
+
+
+            df_finish = pd.DataFrame()
+            df_finish = pd.concat(df_new, keys=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16',
+                                                '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37'])
+            self.sortedLatData[pressure_key] = df_finish
